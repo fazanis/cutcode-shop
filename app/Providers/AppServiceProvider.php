@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+
+use App\Faker\ImagesFaker;
+use App\Http\Kernel;
+use Carbon\CarbonInterval;
+use Faker\Factory;
+use Faker\Generator;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(Generator::class,function (){
+            $faker = Factory::create();
+            $faker->addProvider(new ImagesFaker($faker));
+            return $faker;
+        });
     }
 
     /**
@@ -22,11 +32,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Model::preventLazyLoading(!app()->isProduction());
-        Model::preventSilentlyDiscardingAttributes(!app()->isProduction());
+        Model::shouldBeStrict(!app()->isProduction());
 
-        DB::whenQueryingForLongerThan(500,function (Connection $connection){
-            // TODO
+
+        DB::listen(function ($query){
+            if ($query->time>500){
+                // $query->sql
+                // $query->bindings
+            }
         });
+
+        $kernel = app(Kernel::class);
+        $kernel->whenRequestLifecycleIsLongerThan(
+            CarbonInterval::seconds(4),
+            function (){
+
+            }
+        );
     }
 }
