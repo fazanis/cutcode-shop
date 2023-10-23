@@ -24,6 +24,7 @@ class RefreshCommand extends Command
     {
         if (app()->isLocal()){
             Storage::deleteDirectory('products');
+            Storage::deleteDirectory('brands');
             $this->call('migrate:fresh',['--seed'=>true]);
         }
     }

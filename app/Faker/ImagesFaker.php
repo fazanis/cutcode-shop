@@ -8,14 +8,16 @@ use Illuminate\Support\Str;
 
 class ImagesFaker extends Base
 {
-    public function unicImage(string $dir='',$width=500,$height=500):string
+    public function unicImage(string $fromDir):string
     {
-        $name = $dir.'/'.Str::random(6).'.jpg';
-        Storage::put(
-            $name,
-            file_get_contents("https://loremflickr.com/$width/$height")
+        if (!Storage::exists($fromDir)){
+            Storage::makeDirectory($fromDir);
+        }
+        $file = $this->generator->file(
+            base_path("/tests/Fixtures/images/$fromDir"),
+            Storage::path($fromDir),
+            false
         );
-
-        return '/storage/'.$name;
+        return '/storage/'.trim($fromDir,'/').'/'.$file;
     }
 }
